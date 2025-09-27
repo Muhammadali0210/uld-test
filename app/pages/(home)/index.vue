@@ -16,7 +16,7 @@
 .custom-scroll {
   /* Firefox */
   scrollbar-width: thin;
-  scrollbar-color: #113685 #f1f1f1;
+  scrollbar-color: #3f5a94 #f1f1f1;
 }
 
 .custom-scroll::-webkit-scrollbar {
@@ -29,11 +29,11 @@
 }
 
 .custom-scroll::-webkit-scrollbar-thumb {
-  background-color: #113685;
+  background-color: #3f5a94;
   border-radius: 4px;
 }
 
 .custom-scroll::-webkit-scrollbar-thumb:hover {
-  background-color: #113685;
+  background-color: #3f5a94;
 }
 </style>

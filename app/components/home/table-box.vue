@@ -1,32 +1,17 @@
 <template>
   <div class="p-4 bg-white rounded-lg h-[50vh] min-h-[50vh] flex flex-col gap-4">
-     <div class="h-[28px] min-h-[28px] flex gap-3 items-center">
+    <div class="h-[28px] min-h-[28px] flex justify-between gap-3 items-center">
+      <div class="flex gap-3 items-center h-full">
         <div class="h-full rounded-full bg-blue-900 w-[6px]"></div>
         <h2 class="uppercase text-black font-bold text-[18px] leading-[18px]">Events</h2>
-     </div>
+      </div>
+
+      <div class="flex items-center gap-1 rounded-lg bg-slate-200 p-[0px]">
+        <div v-for="(tab, idx) in tabData" :key="tab.value" :class="idx === activeTab ? 'bg-[#3f5a94] text-white' : 'bg-transparent text-black'" @click="activeTab = idx" class="cursor-pointer py-[5px] px-[20px] rounded-lg text-[16px] font-semibold transition-all duration-200">{{ tab?.name }}</div>
+      </div>
+    </div>
     
-    <!-- <div class="flex gap-4 items-center bg-gray-50 p-4 rounded-lg">
-      <button
-        @click="toggleLoading"
-        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-      >
-        {{ isLoading ? 'Stop Loading' : 'Start Loading' }}
-      </button>
-      
-      <button
-        @click="addNewUser"
-        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-      >
-        Add User
-      </button>
-      
-      <button
-        @click="clearAllData"
-        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-      >
-        Clear All
-      </button>
-    </div> -->
+    
     <div class="h-[calc(100%-62px)]">
         <UiDataTable
         :data="currentPageData"
@@ -50,6 +35,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+const tabData = ref([
+  { name: "All", value: "all" },
+  { name: "Events", value: "events" },
+  { name: "From", value: "from" }
+])
+const activeTab = ref(0)
 
 // Mock data
 const generateMockUsers = (count: number) => {

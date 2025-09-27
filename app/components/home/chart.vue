@@ -1,6 +1,25 @@
 <template>
-  <div class="w-full bg-white">
-    <div ref="chartEl" class="w-full h-[420px]"></div>
+  <div class="w-full flex gap-0 justify-between flex-1">
+    <div class="w-[50px] min-w-[50px] flex-1 bg-white flex flex-col justify-around py-5 pr-2 items-end m-0">
+      <h3 class="text-[18px] font-bold uppercase text-black">Off</h3>
+      <h3 class="text-[18px] font-bold uppercase text-black">SB</h3>
+      <h3 class="text-[18px] font-bold uppercase text-black">D</h3>
+      <h3 class="text-[18px] font-bold uppercase text-black">ON</h3>
+    </div>
+    <div class="overflow-x-auto custom-scroll w-full">
+      <div :style="{ width: 60 * 110 + 'px' }">
+        <ClientOnly>
+          <div ref="chartEl" class="w-full h-[300px]"></div>
+        </ClientOnly>
+      </div>
+    </div>
+    <div class="w-[70px] min-w-[70px] flex-1 bg-white flex flex-col justify-around  py-8 pl-2 items-start m-0 gap-7">
+      <!-- <h3 class="text-[16px] leading-[16px] font-bold text-gray-600">Sep 23 </h3> -->
+      <h3 class="text-[16px] leading-[16px] font-bold text-gray-600">0.00 h</h3>
+      <h3 class="text-[16px] leading-[16px] font-bold text-gray-600">24.00 h</h3>
+      <h3 class="text-[16px] leading-[16px] font-bold text-gray-600">0.00 h</h3>
+      <h3 class="text-[16px] leading-[16px] font-bold text-gray-600">0.00 h</h3>
+    </div>
   </div>
 </template>
 
@@ -9,6 +28,7 @@ import { ref, onMounted, nextTick, defineExpose } from "vue";
 import * as echarts from "echarts";
 import { driverLogs, type EventLog } from "./data1";
 import dayjs from "dayjs";
+
 
 function parseToMs(s: string) {
   if (!s) return NaN;
@@ -40,6 +60,7 @@ const minTimeMs = (() => {
   dt.setHours(0, 0, 0, 0);
   return dt.getTime();
 })();
+
 const maxTimeMs = (() => {
   const max = Math.max(...events.map(e => parseToMs(e.end)));
   const dt = new Date(max);
@@ -136,7 +157,7 @@ const optionBase: echarts.EChartsOption = {
       return `<b>${label}</b><br/>${hh}:${mm}<br/>Duration: ${dur}`;
     }
   },
-  grid: { left: 30, right: 20, top: 20, bottom: 10, containLabel: true },
+  grid: { left: -50, right: 0, top: 0, bottom: 0, containLabel: true, height: 290 },
   xAxis: {
     type: "time",
     min: minTimeMs,
@@ -144,6 +165,7 @@ const optionBase: echarts.EChartsOption = {
     interval: 60 * 60 * 1000,
     minInterval: 60 * 60 * 1000,
     maxInterval: 60 * 60 * 1000,
+    position: "top",
     axisLabel: {
       formatter: (val: number) => {
         const d = dayjs(val);
@@ -151,16 +173,39 @@ const optionBase: echarts.EChartsOption = {
         const m = d.minute();
 
         if (h === 0 && m === 0) {
-          return d.format("DD-MMM");
+          return `{date|${d.format("DD-MMM")}}`;
         }
         if (h === 12 && m === 0) {
-          return "N";
+          return `{noon|N}`;
         }
-        return String(h);
+        return `{hour|${h}}`;
+      },
+      rich: {
+        hour: {
+          fontSize: 14,
+          color: "#555",
+          fontWeight: "normal"
+        },
+        noon: {
+          fontSize: 14,
+          fontWeight: "bold",
+          color: "#000000"
+        },
+        date: {
+          fontSize: 14,
+          fontWeight: "bolder",
+          color: "#000000"
+        }
       }
     },
     splitLine: {
-      show: true
+      show: true,
+      lineStyle: {
+        color: "#ccc",
+        width: 1,
+        type: "solid",
+        opacity: 1
+      }
     },
     minorTick: { show: false },
     minorSplitLine: { show: false },
@@ -177,12 +222,15 @@ const optionBase: echarts.EChartsOption = {
     axisLine: { show: false },
     axisLabel: {
       color: '#000000',
-      fontWeight: 'bold'  
+      fontWeight: 'bold'
     },
     splitLine: {
       show: true,
-      lineStyle: {
-        color: '#333'
+     lineStyle: {
+        color: "#ccc",
+        width: 1,
+        type: "solid",
+        opacity: 1
       }
     }
   },
@@ -198,7 +246,7 @@ const optionBase: echarts.EChartsOption = {
       step: "end",
       showSymbol: false,
       data: stepPoints.map(p => [p[0], p[1]]),
-      lineStyle: { color: "#113685", width: 4 },
+      lineStyle: { color: "#3f5a94", width: 4 },
       markArea: {
         silent: true,
         itemStyle: { color: "rgba(34,197,94,0.08)" },
