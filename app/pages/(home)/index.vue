@@ -1,13 +1,24 @@
 <script setup lang="ts">
+import { driverLogs } from '~/components/home/data';
 
+const activeLogId = ref<number | null>(null);
+const handleSelectLog = (id: number) => {
+  activeLogId.value = id;
+};
 </script>
 
 <template>
     <div class="w-full h-[100vh] max-h-[100vh] overflow-hidden bg-[#ebebeb] flex flex-col justify-between">
         <HomeHeader />
         <div class="h-full flex flex-col gap-2 p-2">
-            <HomeChartBox />
-            <HomeTableBox />
+            <HomeChartBox
+              :active-log-id="activeLogId" 
+              @select-log="handleSelectLog" 
+            />
+            <HomeTableBox
+              :active-log-id="activeLogId" 
+              @select-log="handleSelectLog" 
+            />
         </div>
         <HomeFooter />
     </div>

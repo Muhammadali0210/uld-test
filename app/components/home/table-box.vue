@@ -7,196 +7,117 @@
       </div>
 
       <div class="flex items-center gap-1 rounded-lg bg-slate-200 p-[0px]">
-        <div v-for="(tab, idx) in tabData" :key="tab.value" :class="idx === activeTab ? 'bg-[#3f5a94] text-white' : 'bg-transparent text-black'" @click="activeTab = idx" class="cursor-pointer py-[5px] px-[20px] rounded-lg text-[16px] font-semibold transition-all duration-200">{{ tab?.name }}</div>
+        <div v-for="(tab, idx) in tabData" :key="tab.value"
+          :class="idx === activeTab ? 'bg-[#3f5a94] text-white' : 'bg-transparent text-black'" @click="activeTab = idx"
+          class="cursor-pointer py-[5px] px-[20px] rounded-lg text-[16px] font-semibold transition-all duration-200">{{
+            tab?.name }}</div>
       </div>
     </div>
-    
-    
+
+
     <div class="h-[calc(100%-62px)]">
-        <UiDataTable
-        :data="currentPageData"
-        :columns="columns"
-        :loading="isLoading"
-        :total="totalItems"
-        :current-page="currentPage"
-        :limit="pageLimit"
-        :show-indexes="true"
-        :show-actions="true"
-        :on-edit="hadleEdit"
-        :on-delete="handleDelete"
-        @selected-ids="handleSelectedIds"
-        @delete-selected="handleDeleteSelected"
-        @page-change="handlePageChange"
-        @limit-change="handleLimitChange"
-        />
+      <UiDataTable :data="driverLogs" :columns="columns" :loading="isLoading" :total="total" :current-page="currentPage"
+        :limit="pageLimit" :show-indexes="true" :show-actions="true" :on-edit="hadleEdit" :on-delete="handleDelete"
+        @selected-ids="handleSelectedIds" @delete-selected="handleDeleteSelected" @page-change="handlePageChange"
+        @limit-change="handleLimitChange" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref } from 'vue'
+import { driverLogs } from './data'
 const tabData = ref([
   { name: "All", value: "all" },
   { name: "Events", value: "events" },
   { name: "From", value: "from" }
 ])
 const activeTab = ref(0)
+const currentPage = ref(1)
+const pageLimit = ref(4)
+const total = ref(30)
+const isLoading = ref(false)
 
-// Mock data
-const generateMockUsers = (count: number) => {
-  const names = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Wilson', 'David Brown', 'Lisa Davis', 'Tom Miller', 'Anna Garcia', 'Chris Martinez', 'Emily Rodriguez']
-  const emails = ['john@example.com', 'jane@example.com', 'mike@example.com', 'sarah@example.com', 'david@example.com', 'lisa@example.com', 'tom@example.com', 'anna@example.com', 'chris@example.com', 'emily@example.com']
-  const roles = ['Admin', 'User', 'Manager', 'Developer', 'Designer']
-  const statuses = ['Active', 'Inactive', 'Pending']
-
-  return Array.from({ length: count }, (_, index) => ({
-    id: index + 1,
-    name: names[index % names.length],
-    email: emails[index % emails.length],
-    role: roles[Math.floor(Math.random() * roles.length)],
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    createdAt: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toLocaleDateString(),
-    lastLogin: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toLocaleDateString()
-  }))
+const handleLimitChange = (e: number) => {
+  pageLimit.value = e
 }
 
-// Reactive data
-const allUsers = ref(generateMockUsers(47)) // Generate 47 users for pagination testing
-const isLoading = ref(false)
-const currentPage = ref(1)
-const pageLimit = ref(20)
-const selectedIds = ref<(string | number)[]>([])
+const handlePageChange = (e: number) => {
+  currentPage.value = e
+}
 
-// Computed properties
-const totalItems = computed(() => allUsers.value.length)
+const handleDelete = (item: any) => [
+  console.log("Deleted", item)
+]
 
-const currentPageData = computed(() => {
-  const start = (currentPage.value - 1) * pageLimit.value
-  const end = start + pageLimit.value
-  return allUsers.value.slice(start, end)
-})
+const handleSelectedIds = (selectedID: (string | number)[]) => {
+  console.log("Selected ids: ", selectedID)
+}
 
-// Table columns configuration
+const handleDeleteSelected = () => {
+  console.log("Delete selected");
+}
+
+const hadleEdit = () => {
+  console.log("Edit")
+}
+
 const columns = ref([
   {
-    key: 'name',
-    title: 'Name',
+    key: 'start',
+    title: 'Time (CDT)',
     width: '200px'
   },
   {
-    key: 'email',
-    title: 'Email',
+    key: 'duration',
+    title: 'Duration',
     width: '250px'
   },
   {
-    key: 'role',
-    title: 'Role',
-    width: '120px',
-    render: (item: any) => ({
-      template: `<span class="px-2 py-1 text-xs font-semibold rounded-full" :class="{
-        'bg-blue-100 text-blue-800': item.role === 'Admin',
-        'bg-green-100 text-green-800': item.role === 'User',
-        'bg-purple-100 text-purple-800': item.role === 'Manager',
-        'bg-orange-100 text-orange-800': item.role === 'Developer',
-        'bg-pink-100 text-pink-800': item.role === 'Designer'
-      }">{{ item.role }}</span>`,
-      props: { item }
-    })
+    key: 'type',
+    title: 'Event',
+    render: (item: any) => {
+      const role = item?.type || "Off Duty";
+      let classes = "px-2 py-1 text-xs font-semibold rounded-full ";
+
+      if (role === "Off Duty") classes += "bg-blue-100 text-blue-800";
+      else if (role === "On Duty") classes += "bg-green-100 text-green-800";
+      else if (role === "Sleeper") classes += "bg-purple-100 text-purple-800";
+      else if (role === "Driving") classes += "bg-orange-100 text-orange-800";
+      return h("span", { class: classes }, role);
+    },
+    width: "200px"
   },
   {
-    key: 'status',
-    title: 'Status',
-    width: '100px',
-    render: (item: any) => ({
-      template: `<span class="px-2 py-1 text-xs font-semibold rounded-full" :class="{
-        'bg-green-100 text-green-800': item.status === 'Active',
-        'bg-red-100 text-red-800': item.status === 'Inactive',
-        'bg-yellow-100 text-yellow-800': item.status === 'Pending'
-      }">{{ item.status }}</span>`,
-      props: { item }
-    })
+    key: 'location',
+    title: 'Location'
   },
   {
-    key: 'createdAt',
-    title: 'Created At',
+    key: 'system',
+    title: 'System',
+    width: '120px'
+  },
+  {
+    key: 'odometer',
+    title: 'Odometer',
     width: '120px'
   },
   {
     key: 'lastLogin',
-    title: 'Last Login',
+    title: 'Eng hours',
+    width: '120px'
+  },
+  {
+    key: 'notice',
+    title: 'Notice',
+    width: '120px'
+  },
+  {
+    key: 'status',
+    title: 'Status',
     width: '120px'
   }
 ])
-
-// Event handlers
-const handleSelectedIds = (ids: (string | number)[]) => {
-  selectedIds.value = ids
-}
-
-const handleDeleteSelected = (ids: (string | number)[]) => {
-  // Simulate API call
-  setTimeout(() => {
-    allUsers.value = allUsers.value.filter(user => !ids.includes(user.id))
-    
-    // Adjust current page if necessary
-    const maxPage = Math.ceil(allUsers.value.length / pageLimit.value)
-    if (currentPage.value > maxPage && maxPage > 0) {
-      currentPage.value = maxPage
-    }
-  }, 500)
-}
-
-const handlePageChange = (page: number) => {
-  currentPage.value = page
-}
-
-const handleLimitChange = (limit: number) => {
-  pageLimit.value = limit
-  currentPage.value = 1 // Reset to first page
-}
-
-const handleDelete = (item: any) => {
-  if (confirm(`Are you sure you want to delete ${item.name}?`)) {
-    allUsers.value = allUsers.value.filter(user => user.id !== item.id)
-  }
-}
-
-const hadleEdit = (e : any) => {
-    console.log("Edit")
-}
-
-// Test functions
-const toggleLoading = () => {
-  isLoading.value = !isLoading.value
-  
-  if (isLoading.value) {
-    setTimeout(() => {
-      isLoading.value = false
-    }, 3000)
-  }
-}
-
-const addNewUser = () => {
-  const newUser = {
-    id: Math.max(...allUsers.value.map(u => u.id)) + 1,
-    name: `New User ${Date.now()}`,
-    email: `newuser${Date.now()}@example.com`,
-    role: 'User',
-    status: 'Active',
-    createdAt: new Date().toLocaleDateString(),
-    lastLogin: new Date().toLocaleDateString()
-  }
-  
-  allUsers.value.unshift(newUser)
-}
-
-const clearAllData = () => {
-  if (confirm('Are you sure you want to clear all data?')) {
-    allUsers.value = []
-    currentPage.value = 1
-    selectedIds.value = []
-  }
-}
 </script>
 
 <style scoped>

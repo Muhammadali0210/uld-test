@@ -11,28 +11,22 @@
                     <tr>
                         <th class="px-4 py-3 head-text text-left border-r border-gray-300 w-[60px]">
                             <div class="flex items-center gap-2 w-full">
-                                <input 
-                                    type="checkbox" 
-                                    :checked="isAllSelected" 
-                                    :indeterminate="isSomeSelected"
+                                <input type="checkbox" :checked="isAllSelected" :indeterminate="isSomeSelected"
                                     @change="toggleSelectAll"
-                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" 
-                                />
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" />
                                 <div v-if="showIndexes" class="head-text text-left bg-white font-bold">#</div>
                             </div>
                         </th>
 
 
                         <th v-for="column in columns" :key="String(column.key)"
-                            class="p-2 text-left border-r border-[#E2E8F0]"
-                            :style="{ width: column.width }">
+                            class="p-2 text-left border-r border-[#E2E8F0]" :style="{ width: column.width }">
                             <div class="flex items-center gap-3 w-[max-content]">
                                 <p class="head-text">{{ column.title }}</p>
                             </div>
                         </th>
 
-                        <th v-if="showActions"
-                            class="p-2 w-[72px] min-w-[72px] z-40">
+                        <th v-if="showActions" class="p-2 w-[72px] min-w-[72px] z-40">
                             <p class="head-text">Actions</p>
                         </th>
                     </tr>
@@ -43,13 +37,10 @@
                         class="border-b border-[#E2E8F0] hover:bg-slate-100">
                         <td class="px-4 py-2 border-r border-[#E2E8F0] w-[60px]">
                             <div class="flex items-center gap-2 w-full">
-                                <input 
-                                    type="checkbox" 
-                                    :value="getItemId(item)"
+                                <input type="checkbox" :value="getItemId(item)"
                                     :checked="selectedIds.includes(getItemId(item))"
                                     @change="toggleSelectItem(getItemId(item))"
-                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" 
-                                />
+                                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" />
                                 <div v-if="showIndexes" class="id-text">
                                     {{ (currentPage - 1) * limit + index + 1 }}
                                 </div>
@@ -59,12 +50,14 @@
 
                         <td v-for="column in columns" :key="String(column.key)"
                             class="px-[16px] py-2 item-text z-20 border-r border-[#E2E8F0]">
-                            <component v-if="column.render" :is="column.render" :item="item" />
+                            <span v-if="column.render">
+                                <!-- render funksiyani chaqiramiz -->
+                                <component :is="column.render(item)" />
+                            </span>
                             <span v-else>{{ getItemValue(item, column.key) }}</span>
                         </td>
 
-                        <td v-if="showActions && onEdit && onDelete"
-                            class="p-2">
+                        <td v-if="showActions && onEdit && onDelete" class="p-2">
                             <div class="flex items-center gap-2">
                                 <button @click="onEdit(item)" class="p-2 hover:bg-gray-100 rounded" title="Edit">
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
