@@ -66,12 +66,12 @@ const columns = ref([
   {
     key: 'start',
     title: 'Time (CDT)',
-    width: '200px'
+    width: '200px',
   },
   {
     key: 'duration',
     title: 'Duration',
-    width: '250px'
+    width: '120px'
   },
   {
     key: 'type',
@@ -86,11 +86,12 @@ const columns = ref([
       else if (role === "Driving") classes += "bg-orange-100 text-orange-800";
       return h("span", { class: classes }, role);
     },
-    width: "200px"
+    width: "110px"
   },
   {
     key: 'location',
-    title: 'Location'
+    title: 'Location',
+    width: '280px'
   },
   {
     key: 'system',

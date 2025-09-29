@@ -1,12 +1,15 @@
 <template>
     <div class="bg-white rounded-lg h-full p-4 w-full">
-        Chart
+        <div class="flex w-full justify-center gap-3 pb-4">
+            <button class="rounded-lg px-4 py-[4px] bg-slate-200 text-[16px] font-semibold pb-4ld text-[#3f5a94]">18h 30m</button>
+            <button class="rounded-lg px-4 py-[4px] bg-slate-200 text-[16px] font-semibold text-[#3f5a94]">518h 47m</button>
+        </div>
         <div class="w-full flex gap-0 justify-between flex-1">
             <div class="w-[50px] min-w-[50px] flex-1 bg-white flex flex-col justify-around py-5 pr-2 items-end m-0">
-                <h3 class="text-[18px] font-bold uppercase text-black">Off</h3>
-                <h3 class="text-[18px] font-bold uppercase text-black">SB</h3>
-                <h3 class="text-[18px] font-bold uppercase text-black">D</h3>
-                <h3 class="text-[18px] font-bold uppercase text-black">ON</h3>
+                <h3 class="text-[16px] font-semibold uppercase text-black">Off</h3>
+                <h3 class="text-[16px] font-semibold uppercase text-black">SB</h3>
+                <h3 class="text-[16px] font-semibold uppercase text-black">D</h3>
+                <h3 class="text-[16px] font-semibold uppercase text-black">ON</h3>
             </div>
             <div class="overflow-x-auto custom-scroll w-full">
                 <div :style="{ width: 60 * 110 + 'px' }">
@@ -37,9 +40,10 @@ function parseToMs(s: string) {
         return new Date(s).getTime();
     }
     const [datePart, timePart = "00:00:00"] = s.split(/[T ]/);
+    if (!datePart) return NaN;
     const [y, m, d] = datePart.split("-").map(Number);
     const [hh = 0, mm = 0, ss = 0] = timePart.split(":").map((v) => Number(v));
-    return new Date(y, m - 1, d, hh || 0, mm || 0, Math.floor(ss || 0)).getTime();
+    return new Date(y as number, m as number - 1, d, hh || 0, mm || 0, Math.floor(ss || 0)).getTime();
 }
 
 const STATUS_ORDER = ["On Duty", "Driving", "Sleeper", "Off Duty"] as const;
@@ -68,28 +72,23 @@ const maxTimeMs = (() => {
 function buildStepPoints(evts: EventLog[]) {
     const pts: [number, number][] = [];
     if (!evts.length) return pts;
-    const list = evts.slice().sort((a, b) => parseToMs(a.start) - parseToMs(b.start));
+    const list: any = evts.slice().sort((a, b) => parseToMs(a.start) - parseToMs(b.start));
 
-    // start with day's start and first status
     pts.push([minTimeMs, statusToValue(list[0].type)]);
 
     for (let i = 0; i < list.length; i++) {
-        const e = list[i];
+        const e: any = list[i];
         const val = statusToValue(e.type);
         const sMs = parseToMs(e.start);
         const tMs = parseToMs(e.end);
 
         const last = pts[pts.length - 1];
-        // if there is a gap between last timestamp and this start, keep flat
         if (last && last[0] < sMs) {
             pts.push([sMs, last[1]]);
         }
-        // vertical jump at start
         pts.push([sMs, val]);
-        // flat until end
         pts.push([tMs, val]);
 
-        // ensure continuity to next start (if next start > end)
         if (i < list.length - 1) {
             const nextStart = parseToMs(list[i + 1].start);
             if (nextStart > tMs) {
@@ -98,7 +97,6 @@ function buildStepPoints(evts: EventLog[]) {
         }
     }
 
-    // final ensure last covers maxTimeMs
     const last = pts[pts.length - 1];
     if (last && last[0] < maxTimeMs) pts.push([maxTimeMs, last[1]]);
 
@@ -138,10 +136,10 @@ function buildMarkAreas(evts: EventLog[]) {
     const areas: any[] = [];
     for (const e of evts) {
         const color =
-            e.type === "Off Duty" ? "rgba(59,130,246,0.15)" : // ko‘k
-                e.type === "Sleeper" ? "rgba(168,85,247,0.15)" : // binafsha
-                    e.type === "Driving" ? "rgba(249,115,22,0.15)" : // to‘q sariq
-                        e.type === "On Duty" ? "rgba(34,197,94,0.15)" :  // yashil
+            e.type === "Off Duty" ? "rgba(59,130,246,0.15)" :
+                e.type === "Sleeper" ? "rgba(168,85,247,0.15)" :
+                    e.type === "Driving" ? "rgba(249,115,22,0.15)" :
+                        e.type === "On Duty" ? "rgba(34,197,94,0.15)" :
                             "rgba(0,0,0,0)";
 
         areas.push([{
@@ -165,7 +163,6 @@ const optionBase: echarts.EChartsOption = {
             const d = new Date(timeMs);
             const hh = String(d.getHours()).padStart(2, "0");
             const mm = String(d.getMinutes()).padStart(2, "0");
-            // find event
             const found = events.find(ev => parseToMs(ev.start) <= timeMs && parseToMs(ev.end) >= timeMs);
             const label = valueToLabel(p && p.value ? (Array.isArray(p.value) ? p.value[1] : p.value) : 0);
             const dur = found ? formatDurationMs(parseToMs(found.end) - parseToMs(found.start)) : "-";
@@ -250,7 +247,7 @@ const optionBase: echarts.EChartsOption = {
         },
         axisPointer: {
             label: {
-                show: false // 🔥 shu joyni qo‘shsangiz yonidagi “Driver” yozuvi chiqmaydi
+                show: false
             }
         }
     },
@@ -289,7 +286,6 @@ events.forEach(e => {
     const sLocal = new Date(sMs).toString();
     const sHours = new Date(sMs).getHours();
     const tzOffsetMin = new Date(sMs).getTimezoneOffset();
-    // console.log(`${e.start} -> ms:${sMs}, ISO:${sIso}, Local:${sLocal}, getHours:${sHours}, tzOffsetMin:${tzOffsetMin}`);
 });
 
 onMounted(() => {
@@ -300,30 +296,30 @@ onMounted(() => {
 
         // After render finished, add duration labels using convertToPixel safely
         chart.on("finished", () => {
-            try {
-                const graphics = labels.map(lbl => {
-                    // convertToPixel expects coord inside grid: [x, y]
-                    const pixel = chart!.convertToPixel("grid", [lbl.x, lbl.y]);
-                    const left = (pixel && pixel[0]) || 0;
-                    const top = (pixel && pixel[1]) || 0;
-                    return {
-                        type: "text",
-                        left,
-                        top: top - 14,
-                        style: {
-                            text: lbl.duration,
-                            fill: "#374151",
-                            fontSize: 10
-                        }
-                    };
-                });
-                chart!.setOption({ graphic: graphics });
-            } catch (err) {
-                console.warn("convertToPixel/graphic error:", err);
-            }
+            setTimeout(() => {
+                try {
+                    const graphics = labels.map(lbl => {
+                        const pixel = chart!.convertToPixel("grid", [lbl.x, lbl.y]);
+                        const left = (pixel && pixel[0]) || 0;
+                        const top = (pixel && pixel[1]) || 0;
+                        return {
+                            type: "text",
+                            left,
+                            top: top - 14,
+                            style: {
+                                text: lbl.duration,
+                                fill: "#374151",
+                                fontSize: 10
+                            }
+                        };
+                    });
+                    chart!.setOption({ graphic: graphics });
+                } catch (err) {
+                    console.warn("convertToPixel/graphic error:", err);
+                }
+            }, 0);
         });
 
-        // responsive
         window.addEventListener("resize", () => chart && chart.resize());
     });
 });
@@ -349,5 +345,5 @@ defineExpose({ focusOnTime });
 </script>
 
 <style scoped>
-/* nothing special */
+
 </style>

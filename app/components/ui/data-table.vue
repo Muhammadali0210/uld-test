@@ -20,7 +20,7 @@
 
 
                         <th v-for="column in columns" :key="String(column.key)"
-                            class="p-2 text-left border-r border-[#E2E8F0]" :style="{ width: column.width }">
+                            class="p-2 text-left border-r border-[#E2E8F0]" :style="{ 'min-width': column.width }">
                             <div class="flex items-center gap-3 w-[max-content]">
                                 <p class="head-text">{{ column.title }}</p>
                             </div>
